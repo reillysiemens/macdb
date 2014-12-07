@@ -1,4 +1,5 @@
 import re
+import csv
 import json
 import hashlib
 import requests
@@ -43,6 +44,19 @@ for entry in entries:
     # Append that dictionary to our list of organizations.
     organizations.append(organization)
 
-# Convert the list of organizations to a JSON formatted string.
-json_organizations = json.dumps(organizations)
-print(json_organizations)
+# Convert the list of organizations to a JSON file.
+with open('oui.json', 'w') as json_file:
+    json_organizations = json.dumps(organizations)
+    json_file.write(json_organizations)
+    json_file.close()
+
+# Convert the list of organizations to a CSV file.
+with open('oui.csv', 'w') as csv_file:
+    field_names = ['id', 'oui', 'address']
+    writer = csv.DictWriter(csv_file, fieldnames=field_names)
+
+    writer.writeheader()
+    for organization in organizations:
+        writer.writerow(organization)
+
+    csv_file.close()
