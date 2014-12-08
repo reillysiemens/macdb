@@ -1,8 +1,8 @@
 import re
-import csv
-import json
 import hashlib
 import requests
+
+import models
 
 location = "http://www.ieee.org/netstorage/standards/oui.txt"
 oui_id = re.compile(" *(\w{6}) *\(.*\)[^\w]+(.*)$")
@@ -36,27 +36,9 @@ for entry in entries:
     # Find the address for the organization.
     address = re.sub('\s+', ' ', ' '.join(lines[2:]).strip())
 
-    # Create a dictionary for the organization.
-    organization = {'id': matches.group(2),
-                    'oui': matches.group(1),
-                    'address': address}
+    organization = models.Organization(oui=matches.group(1),
+                                       name=matches.group(2),
+                                       address=address)
+    models.session.add(organization)
 
-    # Append that dictionary to our list of organizations.
-    organizations.append(organization)
-
-# Convert the list of organizations to a JSON file.
-with open('oui.json', 'w') as json_file:
-    json_organizations = json.dumps(organizations)
-    json_file.write(json_organizations)
-    json_file.close()
-
-# Convert the list of organizations to a CSV file.
-with open('oui.csv', 'w') as csv_file:
-    field_names = ['id', 'oui', 'address']
-    writer = csv.DictWriter(csv_file, fieldnames=field_names)
-
-    writer.writeheader()
-    for organization in organizations:
-        writer.writerow(organization)
-
-    csv_file.close()
+models.session.commit()
