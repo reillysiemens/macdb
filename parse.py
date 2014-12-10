@@ -1,7 +1,7 @@
 import re
 import hashlib
 import requests
-
+import datetime
 import models
 
 location = "http://www.ieee.org/netstorage/standards/oui.txt"
@@ -14,6 +14,14 @@ request = requests.get(location)
 
 # Update our hash object with the value from our request string.
 request_hash.update(bytes(request.text, "utf-8"))
+
+# Create a datetime string for the request text generated time.
+dts = datetime.datetime.strptime(request.text[13:44], '%a, %d %b %Y %X %z')
+
+# Insert the request metadata into the database.
+meta = models.MetaData(hash=request_hash.hexdigest(), generated=dts)
+models.session.add(meta)
+models.session.commit()
 
 # Ignore the first 127 characters of junk data.
 request_string = request.text[127:]
